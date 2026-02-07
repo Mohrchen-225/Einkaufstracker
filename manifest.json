@@ -1,5 +1,5 @@
 {
-  "name": "Einkaufs-Tracker",
+  "name": "Einkaufstracker",
   "short_name": "Einkauf",
   "description": "Einkaufsliste mit Ausgaben-Tracker für intelligentes Einkaufen",
   "start_url": "/index.html",

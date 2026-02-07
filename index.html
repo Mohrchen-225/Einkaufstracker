@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2c5aa0">
+    <meta name="description" content="Einkaufsliste mit Ausgaben-Tracker">
+    <title>Einkaufs-Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c5aa0 0%, #1e3a6f 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: #2c5aa0;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #2c5aa0;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2c5aa0;
+        }
+
+        .btn {
+            background: #2c5aa0;
+            color: white;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #1e3a6f;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .shopping-list {
+            margin-top: 20px;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            transition: background 0.2s;
+        }
+
+        .item:hover {
+            background: #f9f9f9;
+        }
+
+        .item.checked {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .item input[type="checkbox"] {
+            width: auto;
+            margin-right: 12px;
+            cursor: pointer;
+            transform: scale(1.3);
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        .item-category {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .item-price {
+            font-weight: 600;
+            color: #2c5aa0;
+            margin-right: 10px;
+        }
+
+        .item-delete {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .total {
+            background: #2c5aa0;
+            color: white;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+
+        .history-item {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .history-date {
+            font-weight: 600;
+            color: #2c5aa0;
+            margin-bottom: 5px;
+        }
+
+        .history-total {
+            font-size: 18px;
+            font-weight: 600;
+            color: #28a745;
+        }
+
+        .history-items {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #2c5aa0 0%, #1e3a6f 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>
+            🛒 Einkaufs-Tracker
+        </h1>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('list')">Einkaufsliste</button>
+            <button class="tab" onclick="switchTab('history')">Verlauf</button>
+            <button class="tab" onclick="switchTab('stats')">Statistik</button>
+        </div>
+
+        <!-- EINKAUFSLISTE TAB -->
+        <div id="list" class="tab-content active">
+            <div class="card">
+                <h2>Artikel hinzufügen</h2>
+                <form id="itemForm">
+                    <div class="form-group">
+                        <label for="itemName">Produktname</label>
+                        <input type="text" id="itemName" placeholder="z.B. Milch" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemCategory">Kategorie</label>
+                        <select id="itemCategory" required>
+                            <option value="Obst & Gemüse">🥕 Obst & Gemüse</option>
+                            <option value="Milchprodukte">🥛 Milchprodukte</option>
+                            <option value="Backwaren">🍞 Backwaren</option>
+                            <option value="Getränke">🥤 Getränke</option>
+                            <option value="Fleisch & Fisch">🥩 Fleisch & Fisch</option>
+                            <option value="Sonstiges">📦 Sonstiges</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="itemPrice">Preis (€)</label>
+                        <input type="number" id="itemPrice" step="0.01" min="0" placeholder="0.00" required>
+                    </div>
+                    <button type="submit" class="btn">Artikel hinzufügen</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Aktuelle Einkaufsliste</h2>
+                <div id="shoppingList" class="shopping-list"></div>
+                <div id="totalAmount" class="total" style="display:none;"></div>
+                <div class="action-buttons" id="listActions" style="display:none;">
+                    <button class="btn btn-success" onclick="completeList()">Einkauf abschließen</button>
+                    <button class="btn btn-secondary" onclick="clearList()">Liste löschen</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VERLAUF TAB -->
+        <div id="history" class="tab-content">
+            <div class="card">
+                <h2>Einkaufs-Verlauf</h2>
+                <div id="historyList"></div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick="exportData()">Daten exportieren</button>
+                <button class="btn btn-secondary" onclick="clearHistory()">Verlauf löschen</button>
+            </div>
+        </div>
+
+        <!-- STATISTIK TAB -->
+        <div id="stats" class="tab-content">
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="totalSpent">0,00 €</div>
+                    <div class="stat-label">Gesamt ausgegeben</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="avgSpent">0,00 €</div>
+                    <div class="stat-label">Durchschnitt pro Einkauf</div>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Ausgaben nach Kategorie</h2>
+                <div id="categoryStats"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // App State
+        let currentList = [];
+        let history = [];
+        let currentTab = 'list';
+
+        // Load data from localStorage
+        function loadData() {
+            const savedList = localStorage.getItem('currentList');
+            const savedHistory = localStorage.getItem('history');
+            if (savedList) currentList = JSON.parse(savedList);
+            if (savedHistory) history = JSON.parse(savedHistory);
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('currentList', JSON.stringify(currentList));
+            localStorage.setItem('history', JSON.stringify(history));
+        }
+
+        // Add item to list
+        document.getElementById('itemForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('itemName').value;
+            const category = document.getElementById('itemCategory').value;
+            const price = parseFloat(document.getElementById('itemPrice').value);
+
+            currentList.push({
+                id: Date.now(),
+                name: name,
+                category: category,
+                price: price,
+                checked: false
+            });
+
+            saveData();
+            renderList();
+            this.reset();
+        });
+
+        // Render shopping list
+        function renderList() {
+            const listEl = document.getElementById('shoppingList');
+            const totalEl = document.getElementById('totalAmount');
+            const actionsEl = document.getElementById('listActions');
+
+            if (currentList.length === 0) {
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <p>Keine Artikel auf der Liste</p>
+                    </div>
+                `;
+                totalEl.style.display = 'none';
+                actionsEl.style.display = 'none';
+                return;
+            }
+
+            let total = 0;
+            listEl.innerHTML = currentList.map(item => {
+                total += item.price;
+                return `
+                    <div class="item ${item.checked ? 'checked' : ''}">
+                        <input type="checkbox" ${item.checked ? 'checked' : ''} 
+                               onchange="toggleItem(${item.id})">
+                        <div class="item-info">
+                            <div class="item-name">${item.name}</div>
+                            <div class="item-category">${item.category}</div>
+                        </div>
+                        <div class="item-price">${item.price.toFixed(2)} €</div>
+                        <button class="item-delete" onclick="deleteItem(${item.id})">×</button>
+                    </div>
+                `;
+            }).join('');
+
+            totalEl.innerHTML = `Gesamt: ${total.toFixed(2)} €`;
+            totalEl.style.display = 'block';
+            actionsEl.style.display = 'grid';
+        }
+
+        // Toggle item checked
+        function toggleItem(id) {
+            const item = currentList.find(i => i.id === id);
+            if (item) {
+                item.checked = !item.checked;
+                saveData();
+                renderList();
+            }
+        }
+
+        // Delete item
+        function deleteItem(id) {
+            currentList = currentList.filter(i => i.id !== id);
+            saveData();
+            renderList();
+        }
+
+        // Complete list and add to history
+        function completeList() {
+            if (currentList.length === 0) return;
+
+            const total = currentList.reduce((sum, item) => sum + item.price, 0);
+            history.unshift({
+                id: Date.now(),
+                date: new Date().toISOString(),
+                items: [...currentList],
+                total: total
+            });
+
+            currentList = [];
+            saveData();
+            renderList();
+            alert('Einkauf erfolgreich abgeschlossen! ✓');
+        }
+
+        // Clear current list
+        function clearList() {
+            if (confirm('Möchtest du die aktuelle Liste wirklich löschen?')) {
+                currentList = [];
+                saveData();
+                renderList();
+            }
+        }
+
+        // Render history
+        function renderHistory() {
+            const historyEl = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                historyEl.innerHTML = `
+                    <div class="empty-state">
+                        <p>Noch keine abgeschlossenen Einkäufe</p>
+                    </div>
+                `;
+                return;
+            }
+
+            historyEl.innerHTML = history.map(entry => {
+                const date = new Date(entry.date);
+                const dateStr = date.toLocaleDateString('de-DE', { 
+                    day: '2-digit', 
+                    month: '2-digit', 
+                    year: 'numeric' 
+                });
+                const itemsStr = entry.items.map(i => i.name).join(', ');
+
+                return `
+                    <div class="history-item">
+                        <div class="history-date">📅 ${dateStr}</div>
+                        <div class="history-total">${entry.total.toFixed(2)} €</div>
+                        <div class="history-items">${entry.items.length} Artikel: ${itemsStr}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render statistics
+        function renderStats() {
+            const totalSpent = history.reduce((sum, entry) => sum + entry.total, 0);
+            const avgSpent = history.length > 0 ? totalSpent / history.length : 0;
+
+            document.getElementById('totalSpent').textContent = totalSpent.toFixed(2) + ' €';
+            document.getElementById('avgSpent').textContent = avgSpent.toFixed(2) + ' €';
+
+            // Category statistics
+            const categoryTotals = {};
+            history.forEach(entry => {
+                entry.items.forEach(item => {
+                    if (!categoryTotals[item.category]) {
+                        categoryTotals[item.category] = 0;
+                    }
+                    categoryTotals[item.category] += item.price;
+                });
+            });
+
+            const categoryStatsEl = document.getElementById('categoryStats');
+            const sortedCategories = Object.entries(categoryTotals)
+                .sort((a, b) => b[1] - a[1]);
+
+            if (sortedCategories.length === 0) {
+                categoryStatsEl.innerHTML = '<div class="empty-state"><p>Noch keine Daten</p></div>';
+                return;
+            }
+
+            categoryStatsEl.innerHTML = sortedCategories.map(([cat, total]) => `
+                <div class="item">
+                    <div class="item-info">
+                        <div class="item-name">${cat}</div>
+                    </div>
+                    <div class="item-price">${total.toFixed(2)} €</div>
+                </div>
+            `).join('');
+        }
+
+        // Export data
+        function exportData() {
+            const exportObj = {
+                currentList: currentList,
+                history: history,
+                exportDate: new Date().toISOString()
+            };
+            const dataStr = JSON.stringify(exportObj, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `einkaufsliste-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+
+        // Clear history
+        function clearHistory() {
+            if (confirm('Möchtest du den gesamten Verlauf wirklich löschen?')) {
+                history = [];
+                saveData();
+                renderHistory();
+                renderStats();
+            }
+        }
+
+        // Switch tabs
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+
+            // Render content
+            if (tab === 'history') renderHistory();
+            if (tab === 'stats') renderStats();
+        }
+
+        // Initialize app
+        loadData();
+        renderList();
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(reg => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker registration failed'));
+        }
+    </script>
+</body>
+</html>
